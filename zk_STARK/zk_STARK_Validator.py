@@ -10,22 +10,22 @@ SUM_PROOF_FAIL_INFO = "Total sum and non-negative constraint validation failed"
 INCLUSION_PROOF_PASS_INFO = "Inclusion constraint validation passed"
 INCLUSION_PROOF_FAIL_INFO = "Inclusion constraint validation failed"
 
-
-
 def por_user_verify_proofs():
-    print("============ Validation started ==============")
-    abs_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+    #print("============ Validation started ==============")
+    abs_dir = sys.argv[1]
     for files in os.listdir(abs_dir):
         if (files == "sum_proof_data"):
             with open(abs_dir + "/sum_proof_data/config.json", "r") as ff:
                 config_json = json.load(ff)
                 coins = config_json["coins"]
+                
             batches_proof_path = abs_dir + "/sum_proof_data/batches/"
             sum_values = [0] * (len(coins) + 1)
             result = [0] * (len(coins) + 1)
             success = True
+            
             # verify batch proofs
-            for root, dirs, subfiles in os.walk(batches_proof_path):
+            for root, dirs, subfiles in os.walk(batches_proof_path):                
                 for dir in dirs:
                     try:
                         result = verify_batch_proof(batches_proof_path + dir + "/", config_json)
@@ -64,8 +64,8 @@ def por_user_verify_proofs():
             except:
                 print(INCLUSION_PROOF_FAIL_INFO)
     
-    print("============ Validation finished =============")
-    input()
+    #print("============ Validation finished =============")
+    #input()
 
 
 

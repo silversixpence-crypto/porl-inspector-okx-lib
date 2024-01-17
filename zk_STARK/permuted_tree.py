@@ -1,6 +1,6 @@
 from keccak_merkle_tree import merkelize as _merkelize
 from keccak_merkle_tree import mk_branch as _mk_branch
-from keccak_merkle_tree import verify_branch as _verify_branch
+from keccak_merkle_tree import verify_branch_print as _verify_branch
 from keccak_merkle_tree import mk_multi_branch as _mk_multi_branch
 from keccak_merkle_tree import verify_multi_branch as _verify_multi_branch
 from keccak_merkle_tree import keccak_256

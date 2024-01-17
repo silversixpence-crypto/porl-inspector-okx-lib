@@ -2,7 +2,8 @@ from por_stark import mk_por_proof, verify_por_proof
 from permuted_tree import mk_branch, verify_branch, keccak_256
 from poly_utils import PrimeField
 from constants import *
-from utils import check_entry_hash, hex_array_to_bytes
+from utils import check_entry_hash, hex_array_to_bytes, bytes_array_to_hex
+import binascii
 
 import random
 import time
@@ -246,8 +247,18 @@ def verify_single_inclusion_proof(proof_file):
         batch_index = batch_inclusion_proof["batch_index"]
         user_index = batch_inclusion_proof["user_index"]
         uts = batch_inclusion_proof["uts"]
+        
+        print("user_merkle_tree")
         user_leaf = verify_branch(bytes.fromhex(batch_inclusion_proof["batch_mtree_root"]), (uts * (user_index + 1) + uts-2) * EXTENSION_FACTOR, hex_array_to_bytes(batch_inclusion_proof["merkle_path"]))
+        
+        print("user_leaf")
+        print(binascii.hexlify(user_leaf).decode('utf-8'))
+        
         user_entry = int(batch_inclusion_proof["total_value"]).to_bytes(32, 'big')
+        
+        print("user_total_value")
+        print(binascii.hexlify(user_entry).decode('utf-8'))
+        
         j = 0
         temp = b''
         for coin in coins:
@@ -255,9 +266,24 @@ def verify_single_inclusion_proof(proof_file):
             temp = temp + value.to_bytes(32, 'big')
             j += 1
         user_entry = user_entry + keccak_256(temp) + bytes.fromhex(batch_inclusion_proof["user_id"]) + bytes.fromhex(batch_inclusion_proof["random_number"])
+        
+        print("user_balances_string_keccak256")
+        print(binascii.hexlify(keccak_256(temp)).decode('utf-8'))
+        
+        print("user_user_id")
+        print(binascii.hexlify(bytes.fromhex(batch_inclusion_proof["user_id"])).decode('utf-8'))
+        
+        print("user_random_number")
+        print(binascii.hexlify(bytes.fromhex(batch_inclusion_proof["random_number"])).decode('utf-8'))
+        
+        print("user_leaf_data")
+        print(binascii.hexlify(user_entry).decode('utf-8')) # total_value + keccak256(string of balances) + user_id + random_number
+        
         assert user_leaf == keccak_256(user_entry)
 
         trunk_inclusion_proof = inclusion_proof["trunk_inclusion_proof"]
+        
+        print("batch_merkle_tree")
         batch_leaf = verify_branch(bytes.fromhex(trunk_inclusion_proof["trunk_mtree_root"]), (UTS_FOR_TRUNK * (batch_index + 1) + UTS_FOR_TRUNK-2) * EXTENSION_FACTOR, hex_array_to_bytes(trunk_inclusion_proof["merkle_path"]))
         batch_entry = int(trunk_inclusion_proof["total_value"]).to_bytes(32, 'big')
         j = 0
@@ -268,6 +294,9 @@ def verify_single_inclusion_proof(proof_file):
             j += 1
         batch_entry = batch_entry + keccak_256(temp) + bytes.fromhex(trunk_inclusion_proof["batch_id"]) + bytes.fromhex(trunk_inclusion_proof["random_number"])
         assert batch_leaf == keccak_256(batch_entry)
+
+        print("batch_leaf")
+        print(binascii.hexlify(batch_leaf).decode('utf-8'))
 
         assert trunk_inclusion_proof["batch_id"] == batch_inclusion_proof["batch_mtree_root"]
 

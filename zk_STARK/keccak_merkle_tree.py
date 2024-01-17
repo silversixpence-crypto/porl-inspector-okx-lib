@@ -1,4 +1,5 @@
 from Crypto.Hash import keccak
+import binascii
 
 def keccak_256(x):
     k = keccak.new(digest_bits=256)
@@ -21,16 +22,40 @@ def mk_branch(tree, index):
         index //= 2
     return o    # len(o) = 2 * log2(len(tree)/2) + 1
 
-def verify_branch(root, index, proof, output_as_int=False):
+def verify_branch(root, index, proof, output_as_int=False):   
     # index = get_index_in_permuted(index, 2**len(proof) // 2)
     index += 2**len(proof)
     v = proof[0]
     for p in proof[1:]:
         if index % 2:
+            v_save = v
             v = keccak_256(p + v)
         else:
+            v_save = v
             v = keccak_256(v + p)
         index //= 2
+    
+    assert v == root
+    return int.from_bytes(proof[0], 'big') if output_as_int else proof[0]
+
+def verify_branch_print(root, index, proof, output_as_int=False):   
+    # index = get_index_in_permuted(index, 2**len(proof) // 2)
+    index += 2**len(proof)
+    v = proof[0]
+    for p in proof[1:]:
+        if index % 2:
+            v_save = v
+            v = keccak_256(p + v)
+            print(binascii.hexlify(p).decode('utf-8') + "+" + binascii.hexlify(v_save).decode('utf-8') + "=" + binascii.hexlify(v).decode('utf-8'))
+        else:
+            v_save = v
+            v = keccak_256(v + p)
+            print(binascii.hexlify(v_save).decode('utf-8') + "+" + binascii.hexlify(p).decode('utf-8') + "=" + binascii.hexlify(v).decode('utf-8'))
+        index //= 2
+    
+    print("claimed_root")
+    print(binascii.hexlify(root).decode('utf-8'))
+    
     assert v == root
     return int.from_bytes(proof[0], 'big') if output_as_int else proof[0]
 
